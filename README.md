@@ -11,14 +11,14 @@ Making for a better communication flow.
 Consider the Following:
 
 
-Blasaj: Hallo Welt
-Blasaj: Seid ihr gut drauf?
-BorscheTV: Ja und du?
-Blasaj: Auch!
+Blasaj: Hallo Welt  
+Blasaj: Seid ihr gut drauf?  
+BorscheTV: Ja und du?  
+Blasaj: Auch!  
 
 The Bot will read it as:
 
-Blasaj sagt: Hallo Welt.
-Seid ihr gut drauf?
-BorscheTV sagt: Ja und du?
-Blasaj sagt: Auch!
+Blasaj sagt: Hallo Welt.  
+Seid ihr gut drauf?  
+BorscheTV sagt: Ja und du?  
+Blasaj sagt: Auch!  
