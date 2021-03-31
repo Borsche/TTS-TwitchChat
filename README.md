@@ -4,21 +4,7 @@
 This is a TwitchChat Text To Speech Bot which reads the messages send in the Chat.
 Currently The Bot only listens to the Channel "Blasaj".
 
-The Bot appends the string " {username} sagt:" before every message send by a new user.
-Every following message from the same user will not have the string appended.
-Making for a better communication flow.
+This Bot will only read the messages if the the bot "blasajs_bot" writes the message with "##TTS:" at the beginning.
 
-Consider the Following:
-
-
-Blasaj: Hallo Welt  
-Blasaj: Seid ihr gut drauf?  
-BorscheTV: Ja und du?  
-Blasaj: Auch!  
-
-The Bot will read it as:
-
-Blasaj sagt: Hallo Welt.  
-Seid ihr gut drauf?  
-BorscheTV sagt: Ja und du?  
-Blasaj sagt: Auch!  
+This allows the users in the chat to spend their StreamLabs Loyalty Points on the !tts command.
+The message after the command will then be rewritten by blasajs_bot so that it can be read by this TTS bot.

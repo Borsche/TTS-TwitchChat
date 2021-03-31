@@ -25,17 +25,15 @@ client.connect();
 function onMessageHandler (target, context, msg, self) {
     if (self) { return; } // Ignore messages from the bot
 
-    msgContext = {
-        username: context.username,
-        msg: msg
-    }
-
-    msgBus.push(msgContext);
-    // this makes a wierd problem
-    // the shift and pushing in asynchronous manner makes the instances behave strange
-
-    if(msgBus.length == 1) {
-        readMessage();
+    if(context.username === "blasajs_bot" && msg.startsWith("##TTS:")){
+    
+        msgBus.push(msg.substr(6));
+        // this makes a wierd problem
+        // the shift and pushing in asynchronous manner makes the instances behave strange
+    
+        if(msgBus.length == 1) {
+            readMessage();
+        }
     }
 
 }
@@ -48,37 +46,13 @@ function onConnectedHandler (addr, port) {
 function readMessage() {
 
     if(msgBus.length == 0) return;
-    msgContext = msgBus[0]
+    msg = msgBus[0]
 
-    var text = "";
-
-    // if the user is already talking to you (send the previous msg)
-    // dont include his name again
-    if(lastMsgContext != undefined && lastMsgContext.username === msgContext.username) {
-        lastMsgContext = msgContext
-        text = msgContext.msg;
-    } else {
-        lastMsgContext = msgContext
-        text = `${msgContext.username} sagt: ${msgContext.msg}`
-    }
-
-    if(msgContext.username.toLowerCase() == "streamlabs") {
-        text = "";
-    } else if (msgContext.msg.startsWith('!')) {
-        text = "";
-    }
-
-    if(text != "") {
-        say.speak(text, null, 1.0,  (err) => {
-            if(err) {
-                return console.error(err);
-            }
-            msgBus.shift()
-            readMessage()
-        } );
-    } else {
-        msgBus.shift();
-        readMessage();
-    }
-
+    say.speak(msg, null, 1.0,  (err) => {
+        if(err) {
+            return console.error(err);
+        }
+        msgBus.shift()
+        readMessage()
+    } );
 }
