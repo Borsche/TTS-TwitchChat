@@ -1,4 +1,4 @@
-##This Bot currently has no interface. Everything is currently hardcoded!
+## This Bot currently has no interface. Everything is currently hardcoded!
 
 
 This is a TwitchChat Text To Speech Bot which reads the messages send in the Chat.
