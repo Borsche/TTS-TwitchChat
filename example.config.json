@@ -1,0 +1,15 @@
+{
+    "channels": [
+        "blasaj"
+    ],
+    "blockedUsernames": [
+        "streamlabs"
+    ],
+    "blockedPrefixes": [
+        "!"
+    ],
+    "messageTemplates": {
+        "firstConsecutive": "{username} sagt: {message}",
+        "consecutiveMessage": "{message}"
+    } 
+}

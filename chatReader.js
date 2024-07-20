@@ -1,11 +1,10 @@
 const tmi = require('tmi.js');
 const say = require('say');
+const config = require('./config.json');
 
 // Define configuration options
 const opts = {
-  channels: [
-    "blasaj"
-  ]
+  channels: config.channels
 };
 
 var msgBus = [];
@@ -24,7 +23,10 @@ client.connect();
 // Called every time a message comes in
 function onMessageHandler (target, context, msg, self) {
     // Ignore messages from the bot or commands
-    if (self || context.username.toLowerCase() == "streamlabs" || msg.startsWith("!") || msg == '') { return; }
+    if (self 
+        || config.blockedUsernames.includes(context.username.toLowerCase()) 
+        || containsBlockedPrefix(msg) 
+        || msg == '') { return; }
 
     msgContext = {
         username: context.username,
@@ -38,6 +40,14 @@ function onMessageHandler (target, context, msg, self) {
         readMessage();
     }
 
+}
+
+function containsBlockedPrefix(msg) {
+    config.blockedPrefixes.forEach(prefix => {
+        if (msg.startsWith(prefix)) return true;
+    })
+
+    return false;
 }
 
 // Called every time the bot connects to Twitch chat
@@ -54,7 +64,7 @@ function readMessage() {
     // dont include his name again
     const sameUserLastMessage = lastMsgContext != undefined && lastMsgContext.username === msgContext.username;
     lastMsgContext = msgContext
-    const text = sameUserLastMessage ? msgContext.msg : `${msgContext.username} sagt: ${msgContext.msg}`;
+    const text = sameUserLastMessage ? applyTemplate(config.messageTemplates.consecutiveMessage, msgContext) : applyTemplate(config.messageTemplates.firstConsecutive, msgContext);
 
     say.speak(text, null, 1.0,  (err) => {
         if(err) {
@@ -64,4 +74,11 @@ function readMessage() {
         readMessage()
     });
 
+}
+
+function applyTemplate(template, msgContext) {
+    const text = template;
+    return text
+        .replace('{message}', msgContext.msg)
+        .replace('{username}', msgContext.username);
 }
