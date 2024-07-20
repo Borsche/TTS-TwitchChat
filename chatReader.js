@@ -23,17 +23,17 @@ client.connect();
 
 // Called every time a message comes in
 function onMessageHandler (target, context, msg, self) {
-    if (self) { return; } // Ignore messages from the bot
+    // Ignore messages from the bot or commands
+    if (self || context.username.toLowerCase() == "streamlabs" || msg.startsWith("!") || msg == '') { return; }
 
     msgContext = {
         username: context.username,
-        msg: msg
+        msg: msg.replaceAll(/[^a-zA-Z0-9_., ]/g, ' ')
     }
 
     msgBus.push(msgContext);
-    // this makes a wierd problem
-    // the shift and pushing in asynchronous manner makes the instances behave strange
 
+    // start the read
     if(msgBus.length == 1) {
         readMessage();
     }
@@ -50,35 +50,18 @@ function readMessage() {
     if(msgBus.length == 0) return;
     msgContext = msgBus[0]
 
-    var text = "";
-
     // if the user is already talking to you (send the previous msg)
     // dont include his name again
-    if(lastMsgContext != undefined && lastMsgContext.username === msgContext.username) {
-        lastMsgContext = msgContext
-        text = msgContext.msg;
-    } else {
-        lastMsgContext = msgContext
-        text = `${msgContext.username} sagt: ${msgContext.msg}`
-    }
+    const sameUserLastMessage = lastMsgContext != undefined && lastMsgContext.username === msgContext.username;
+    lastMsgContext = msgContext
+    const text = sameUserLastMessage ? msgContext.msg : `${msgContext.username} sagt: ${msgContext.msg}`;
 
-    if(msgContext.username.toLowerCase() == "streamlabs") {
-        text = "";
-    } else if (msgContext.msg.startsWith('!')) {
-        text = "";
-    }
-
-    if(text != "") {
-        say.speak(text, null, 1.0,  (err) => {
-            if(err) {
-                return console.error(err);
-            }
-            msgBus.shift()
-            readMessage()
-        } );
-    } else {
-        msgBus.shift();
-        readMessage();
-    }
+    say.speak(text, null, 1.0,  (err) => {
+        if(err) {
+            return console.error(err);
+        }
+        msgBus.shift()
+        readMessage()
+    });
 
 }
