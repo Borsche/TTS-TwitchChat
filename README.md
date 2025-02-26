@@ -1,23 +1,40 @@
-## This Bot currently has no interface. Everything is currently hardcoded!
-
+## Simple TTS for Twitch Chat Messages
 
 This is a TwitchChat Text To Speech Bot which reads the messages send in the Chat.
-Currently The Bot only listens to the Channel "Blasaj".
+The channels the bot listens to can be configured inte the `config.json`.
 
-The Bot appends the string " {username} sagt:" before every message send by a new user.
-Every following message from the same user will not have the string appended.
-Making for a better communication flow.
+Aswell as the output of consecutive messages which improves the flow.
 
-Consider the Following:
+Take a look at the `example.config.json`:
+```json
+{
+    "channels": [
+        "blasaj"
+    ],
+    "blockedUsernames": [
+        "streamlabs"          // this will prevent the bot to read out messages which where send from the streamlabs bot (this check if performed in lowercase)
+    ],
+    "blockedPrefixes": [
+        "!"                   // this will prevent the bot to read out chat commands
+    ],
+    "messageTemplates": {
+        "firstConsecutive": "{username} sagt: {message}",  // the template for the first consecutive message
+        "consecutiveMessage": "{message}"                  // the template for all the other uninteruppted messages from the same use
+    } 
+}
+```
 
+This config will make the bot listen to messages from the channel 'blasaj'.
+While ignoring all messages from the user "streamlabs", "Streamlabs" etc. and messages starting with "!" (usually commands).
+The template setting will cause the following result:
 
+**Twitch Chat:**  
 Blasaj: Hallo Welt  
 Blasaj: Seid ihr gut drauf?  
 BorscheTV: Ja und du?  
 Blasaj: Auch!  
 
-The Bot will read it as:
-
+**The Bot will read it as:**  
 Blasaj sagt: Hallo Welt.  
 Seid ihr gut drauf?  
 BorscheTV sagt: Ja und du?  
