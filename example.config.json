@@ -9,7 +9,8 @@
         "!"
     ],
     "messageTemplates": {
-        "firstConsecutive": "{username} sagt: {message}",
+        "firstMessage": "{username} sagt: {message}",
         "consecutiveMessage": "{message}"
-    } 
+    },
+    "customRewardId": {}
 }
