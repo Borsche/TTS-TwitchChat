@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1920, height=1080">
+    <title>Twitch TTS Display</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: transparent;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        #message-container {
+            display: flex;
+
+        }
+
+        .message-box {
+            padding: 25px 35px;
+            margin-bottom: 15px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+        }
+
+        .message-box.hiding {
+            animation: slideOut 0.3s ease-out forwards;
+        }
+
+        .username {
+            color: orange;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            text-shadow: -2px -2px -4px rgba(0, 0, 0, 0.8);
+        }
+
+        .message-text {
+            font-size: 28px;
+            color: #FFFFFF;
+            line-height: 1.4;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+        }
+    </style>
+</head>
+<body>
+    <div id="message-container">
+      <!-- <div class="message-box">
+        <div class="username">Blasaj</div>
+        <div class="message-text">Der kleine kleine Hase oder so geht mal so oder so ma gucken nh</div>
+      </div> -->
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const messageContainer = document.getElementById('message-container');
+        let currentAudio = null;
+
+        socket.on('connect', () => {
+            console.log('Connected to server');
+        });
+
+        socket.on('tts-message', (data) => {
+            console.log('Received TTS message:', data.username);
+            displayAndPlayMessage(data);
+        });
+
+        function displayAndPlayMessage(data) {
+            // Create message element
+            const messageBox = document.createElement('div');
+            messageBox.className = 'message-box';
+
+            const username = document.createElement('div');
+            username.className = 'username';
+            username.style.color = data.color;
+            username.innerHTML = data.username;
+
+            const messageText = document.createElement('div');
+            messageText.className = 'message-text';
+            messageText.textContent = data.message;
+
+            messageBox.appendChild(username);
+            messageBox.appendChild(messageText);
+
+            // Add to container
+            messageContainer.appendChild(messageBox);
+
+            // Create and play audio
+            const audioBlob = base64ToBlob(data.audio, 'audio/mpeg');
+            const audioUrl = URL.createObjectURL(audioBlob);
+            
+            currentAudio = new Audio(audioUrl);
+            
+            currentAudio.onended = () => {
+                // Remove message after audio finishes
+                messageBox.classList.add('hiding');
+                setTimeout(() => {
+                    messageBox.remove();
+                    URL.revokeObjectURL(audioUrl);
+                }, 300);
+            };
+
+            currentAudio.onerror = (error) => {
+                console.error('Audio playback error:', error);
+                messageBox.classList.add('hiding');
+                setTimeout(() => {
+                    messageBox.remove();
+                    URL.revokeObjectURL(audioUrl);
+                }, 300);
+            };
+
+            currentAudio.play().catch(error => {
+                console.error('Failed to play audio:', error);
+            });
+        }
+
+        function base64ToBlob(base64, mimeType) {
+            const byteCharacters = atob(base64);
+            const byteNumbers = new Array(byteCharacters.length);
+            
+            for (let i = 0; i < byteCharacters.length; i++) {
+                byteNumbers[i] = byteCharacters.charCodeAt(i);
+            }
+            
+            const byteArray = new Uint8Array(byteNumbers);
+            return new Blob([byteArray], { type: mimeType });
+        }
+
+        socket.on('disconnect', () => {
+            console.log('Disconnected from server');
+        });
+    </script>
+</body>
+</html>
