@@ -16,8 +16,16 @@ const VOICES = {
     BLASAJ: '7VOCa3OKvOom4qbwuu0H',
     SCREAM: 'g4ucswVjPpazgbDDe327',
     PETRA: 'iJoeYUpAnk7y7qkEzmNU',
-    BRYAN: 'bPMKpgEe88vKSwusXTMU'
-}
+    BELLO: '22a7Gh6Zmscuaq9cfG65',
+    BENJAMIN: 'nZpMT2RjIpaat0IaA7Sd',
+    SANTA: 'M4zkunnpRihDKTNF0D7f',
+    RUHBERT: 'TUKJhQmz3RPYBNAgC5A1',
+} 
+
+/**
+ * Take voices from this pool first and remove every taken on so every gets a unique voice
+ */
+const firstAvailableVoices = Object.keys(VOICES).filter(voice => voice !== 'BELLO').map(voice => ({ voice, sort: Math.random() })).sort((a, b) => a.sort - b.sort).map(({ voice }) => voice);
 
 
 const app = express();
@@ -78,8 +86,16 @@ function getUserVoice(username) {
     const lowerUsername = username.toLowerCase();
 
     if (!userVoiceMap.has(lowerUsername)) {
-        const voicesKeys = Object.keys(VOICES);
-        const randomVoice = voicesKeys[Math.floor(voicesKeys.length * Math.random())];
+
+        let randomVoice;
+
+        // first select from the list of voices so all voices are in use
+        if(firstAvailableVoices.length != 0) {
+            randomVoice = firstAvailableVoices.pop();
+        } else {
+            const voicesKeys = Object.keys(VOICES);
+            randomVoice = voicesKeys[Math.floor(voicesKeys.length * Math.random())];
+        }
 
         userVoiceMap.set(lowerUsername, VOICES[randomVoice]);
         console.log('Set Voice for: ' + lowerUsername + ' as ' + randomVoice);
