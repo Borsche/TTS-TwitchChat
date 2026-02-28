@@ -25,7 +25,7 @@ export default class ChatReader {
         //     || this.#containsBlockedPrefix(msg) 
         //     || msg == ''
         //     || (config.customRewardId && context['custom-reward-id'] !== config.customRewardId)) { return; }
-        if (this.#containsBlockedPrefix(msg) || config.blockedUsernames.includes(context.username.toLowerCase())) return;
+        if (this.#containsBlockedPrefix(msg) || config.blockedUsernames.includes(context.username.toLowerCase()) || msg.replace(' ', '').includes('.com')) return;
         if (self) return;
 
         console.log(msg)
