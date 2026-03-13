@@ -17,6 +17,7 @@ export default class ChatReader {
     }
     
     onProcessMessage = (target, username, message) => { console.error('function not defined') };
+    onProcessCommand = (username, command, message) => { console.error('function not defined') };
 
     #onMessageHandler (target, context, msg, self) {
         // Ignore messages from the bot or commands
@@ -28,7 +29,10 @@ export default class ChatReader {
         if (this.#containsBlockedPrefix(msg) || config.blockedUsernames.includes(context.username.toLowerCase()) || msg.replace(' ', '').includes('.com')) return;
         if (self) return;
 
-        console.log(msg)
+        if (msg.startsWith("!")) {
+            this.#processCommand(context.username, msg);
+            return;
+        }
     
         this.#processMessage(context.username, msg);
     }
@@ -46,6 +50,14 @@ export default class ChatReader {
     // Called every time the bot connects to Twitch chat
     #onConnectedHandler (addr, port) {
         console.log(`* Connected to ${addr}:${port}`);
+    }
+
+    #processCommand(username, message) {
+        const messageParts = message.split(" ");
+        const command = messageParts[0];
+        const msg = messageParts.length > 1 ? message.substring(command.length + 1, message.length) : "";
+
+        this.onProcessCommand(username, command.toLowerCase(), msg);
     }
     
     async #processMessage(username, message) {

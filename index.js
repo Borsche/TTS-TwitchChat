@@ -11,21 +11,27 @@ const chatReader = new ChatReader(config.channels);
 const elevenLabsClient = config.elevenlabsApiKey ? new ElevenLabsClient({  apiKey: config.elevenlabsApiKey }) : null;
 
 const VOICES = {
-    WHISPER: 'g5CIjZEefAph4nQFvHAz',
     PATRICK: 'XvCP57PAoOIggYMP8Yvs',
-    BLASAJ: '7VOCa3OKvOom4qbwuu0H',
+    // BLASAJ: '7VOCa3OKvOom4qbwuu0H',
     SCREAM: 'g4ucswVjPpazgbDDe327',
     PETRA: 'iJoeYUpAnk7y7qkEzmNU',
     BELLO: '22a7Gh6Zmscuaq9cfG65',
     BENJAMIN: 'nZpMT2RjIpaat0IaA7Sd',
     SANTA: 'M4zkunnpRihDKTNF0D7f',
     RUHBERT: 'TUKJhQmz3RPYBNAgC5A1',
+    BASTIAN: 'OukEAqLfTzpM37uFE5LT',
+    ANNA: 'DEZHhPbmb8LVZmWufkCh',
+    KONSTANTIN: '7AnKl72zTd7mT3IctdWR'
 } 
 
 /**
  * Take voices from this pool first and remove every taken on so every gets a unique voice
  */
-const firstAvailableVoices = Object.keys(VOICES).filter(voice => voice !== 'BELLO').map(voice => ({ voice, sort: Math.random() })).sort((a, b) => a.sort - b.sort).map(({ voice }) => voice);
+const firstAvailableVoices = Object.keys(VOICES)
+    //.filter(voice => voice !== 'BELLO')
+    .map(voice => ({ voice, sort: Math.random() }))
+    .sort((a, b) => a.sort - b.sort)
+    .map(({ voice }) => voice);
 
 
 const app = express();
@@ -51,6 +57,28 @@ chatReader.onProcessMessage = async (reader, username, message) => {
     }
 }
 
+chatReader.onProcessCommand = (username, command, message) => {
+    console.log(username, command, message);
+    switch (command) {
+        case "!changevoice":
+        case "!cv":
+        case "!sä":
+        case "!stimmeändern":
+            const currentVoice = userVoiceMap.get(username.toLowerCase());
+
+            let voices = {};
+
+            Object.keys(VOICES).filter(voice => voice !== currentVoice).map(voice => {
+                voices[voice] = VOICES[voice];
+            })
+
+
+            const newVoice = getRandomVoice(voices);
+            console.log("Changed voice for " + username + " from " + currentVoice + " to " + newVoice);
+            userVoiceMap.set(username.toLowerCase(), newVoice);
+    }
+}
+
 async function processQueue() {
     if (messageQueue.length === 0) {
         isProcessing = false;
@@ -63,7 +91,7 @@ async function processQueue() {
     try {
         const voice = getUserVoice(current.username);
 
-        const audioData = await getElevenLabsTTS(current.message, voice);
+        const audioData = await getElevenLabsTTS(current.message, VOICES[voice]);
 
         io.emit('tts-message', {
             username: current.username,
@@ -93,15 +121,19 @@ function getUserVoice(username) {
         if(firstAvailableVoices.length != 0) {
             randomVoice = firstAvailableVoices.pop();
         } else {
-            const voicesKeys = Object.keys(VOICES);
-            randomVoice = voicesKeys[Math.floor(voicesKeys.length * Math.random())];
+            randomVoice = getRandomVoice(VOICES);
         }
 
-        userVoiceMap.set(lowerUsername, VOICES[randomVoice]);
+        userVoiceMap.set(lowerUsername, randomVoice);
         console.log('Set Voice for: ' + lowerUsername + ' as ' + randomVoice);
     }
 
-    return userVoiceMap.get(lowerUsername) ?? VOICES.WHISPER;
+    return userVoiceMap.get(lowerUsername) ?? 'PATRICK';
+}
+
+function getRandomVoice(voices) {
+    const voicesKeys = Object.keys(voices);
+    return voicesKeys[Math.floor(voicesKeys.length * Math.random())];
 }
 
 async function getElevenLabsTTS(text, voice) {
