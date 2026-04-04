@@ -7,9 +7,7 @@ import http from "http";
 import axios from 'axios';
 import { StreamerbotClient } from '@streamerbot/client';
 
-const streamerBot = new StreamerbotClient({
-    password: '123512351235'
-})
+const streamerBot = connectStreamerBot(); 
 
 const chatReader = new ChatReader({ channels: config.channels });
 
@@ -49,6 +47,18 @@ const messageQueue = [];
 let isProcessing = false;
 
 const userVoiceMap = new Map();
+
+function connectStreamerBot() {
+    try {
+        return new StreamerbotClient({
+            password: '123512351235'
+        })
+    } catch (e) {
+        console.error("Could not connect to Streamer.bot. Please ensure Streamer.bot is running locally.");
+    } finally {
+        console.log('Connected to Streamer.bot');
+    }
+}
 
 
 chatReader.onProcessMessage = addMessageToQueue

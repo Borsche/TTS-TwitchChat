@@ -79,6 +79,7 @@
     <script>
         const socket = io();
         const messageContainer = document.getElementById('message-container');
+        const messageQueue = [];
         let currentAudio = null;
 
         socket.on('connect', () => {
@@ -87,8 +88,18 @@
 
         socket.on('tts-message', (data) => {
             console.log('Received TTS message:', data.username);
-            displayAndPlayMessage(data);
+            messageQueue.push(data);
+
+            if (messageQueue.length === 1 && (!currentAudio || currentAudio.paused))
+                displayAndPlayNextMessageFromQueue(data);
         });
+
+        function displayAndPlayNextMessageFromQueue() {
+            if (messageQueue.length === 0) return;
+
+            const data = messageQueue.pop();
+            displayAndPlayMessage(data);
+        } 
 
         function displayAndPlayMessage(data) {
             // Create message element
@@ -122,6 +133,10 @@
                 setTimeout(() => {
                     messageBox.remove();
                     URL.revokeObjectURL(audioUrl);
+                    
+                    setTimeout(() => {
+                        displayAndPlayNextMessageFromQueue()
+                    }, 300)
                 }, 300);
             };
 
