@@ -12,6 +12,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@streamerbot/client": "^1.12.2",
+    "axios": "1.14.0",
     "elevenlabs": "^1.51.0",
     "obs-websocket-js": "^5.0.7",
     "say": "^0.16.0",

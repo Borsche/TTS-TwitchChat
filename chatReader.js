@@ -7,8 +7,8 @@ export default class ChatReader {
     #lastUsername = '';
     #client = null;
     
-    constructor(channels) {        
-        this.#client = new tmi.client({channels});
+    constructor(options) {        
+        this.#client = new tmi.client(options);
         
         this.#client.on('message', this.#onMessageHandler.bind(this));
         this.#client.on('connected', this.#onConnectedHandler.bind(this));

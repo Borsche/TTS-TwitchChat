@@ -4,9 +4,14 @@ import { ElevenLabsClient } from 'elevenlabs';
 import express from "express";
 import { Server } from "socket.io";
 import http from "http";
+import axios from 'axios';
+import { StreamerbotClient } from '@streamerbot/client';
 
+const streamerBot = new StreamerbotClient({
+    password: '123512351235'
+})
 
-const chatReader = new ChatReader(config.channels);
+const chatReader = new ChatReader({ channels: config.channels });
 
 const elevenLabsClient = config.elevenlabsApiKey ? new ElevenLabsClient({  apiKey: config.elevenlabsApiKey }) : null;
 
@@ -46,7 +51,9 @@ let isProcessing = false;
 const userVoiceMap = new Map();
 
 
-chatReader.onProcessMessage = async (reader, username, message) => {
+chatReader.onProcessMessage = addMessageToQueue
+
+async function addMessageToQueue(reader, username, message) {
     messageQueue.push({
         username,
         message,
@@ -76,7 +83,29 @@ chatReader.onProcessCommand = (username, command, message) => {
             const newVoice = getRandomVoice(voices);
             console.log("Changed voice for " + username + " from " + currentVoice + " to " + newVoice);
             userVoiceMap.set(username.toLowerCase(), newVoice);
+
+            streamerBot.sendMessage("twitch", `@${username}, du hast nun die Stimme ${newVoice}`, { bot: true });
+            break;
+        case '!donation':
+        case '!ttsdonation':
+        case '!spende':
+        case '!ttsspende':
+            // streamerBot.sendMessage("twitch", `@${username}, Deine Donation wird`, { bot: true });
+            axios.get('https://taskinoz.com/gdq/api')
+                .then(response => { 
+                    console.log('Received GDQ Quote');
+                    addMessageToQueue(null, username, replaceGdq(response.data)) 
+                })
+                .catch(error => console.log('An error occured while using the gqd api', username, command, error));
+            break;
+        // case '!test':
+        //     subtractPoints(username, -100);
     }
+}
+
+function replaceGdq(text) {
+    console.log('Replacing GDQ');
+    return text.replaceAll(/agdq/gi, 'Blasaj').replaceAll(/gdq/gi, 'Blasaj');
 }
 
 async function processQueue() {
@@ -154,6 +183,20 @@ async function getElevenLabsTTS(text, voice) {
         console.error('ElevenLabs API error: ', e);
         throw error;
     }
+}
+
+async function subtractPoints(username, points) {
+    const response = await axios.post('https://streamlabs.com/api/v2.0/points/subtract', {
+        username,
+        points,
+        channel: config.channels[0],
+    }, {
+        headers: {
+            Authorization: 'Bearer 4970214A541EC7E652E4'
+        }
+    })
+
+    console.log(response);
 }
 
 io.on('connection', (socket) => {
